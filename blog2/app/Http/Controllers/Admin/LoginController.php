@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Model\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Org\code\Code;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
@@ -49,6 +51,60 @@ class LoginController extends Controller
                 ->withInput();
         }
 
+        //3 验证是否由此用户（用户名 密码 验证码）
+        if (strtolower($input['code']) != strtolower(session()->get('code'))) {
+            return redirect('admin/login')->with('errors','验证码错误');
+        }
 
+
+        $user = User::where('user_name',$input['username'])->first();
+
+        if (!$user) {
+            return redirect('admin/login')->with('errors','用户名不存在');
+        }
+
+        if ($input['password'] != Crypt::decrypt($user->user_pass)) {
+            return redirect('admin/login')->with('errors','密码不正确');
+        }
+
+        //4 保存用户信息到session中
+
+        session()->put('user',$user);
+
+
+        //5 跳转到后台首页
+
+        return redirect('admin/index');
+
+    }
+
+    //后台首页页面
+    public function index()
+    {
+        return view('admin.index');
+    }
+
+    //后台欢迎页
+    public function welcome()
+    {
+        return view('admin.welcome');
+    }
+
+    //后台退出路由
+    public function logout()
+    {
+        //清空session中的用户信息
+        session()->flush();
+
+        //跳转到登录页面
+        return redirect('admin/login');
+    }
+
+    //加密
+    public function jiami(){
+        $str = '123456';
+        $str2 = 'eyJpdiI6Ikd5elYzRk9LaGd3U3lnRVBWdkhrNnc9PSIsInZhbHVlIjoid0FjbTlxUnlzZkVDOTY5cDJJRG1Mdz09IiwibWFjIjoiNzdjODM1MzE1NzMwZjY0N2NhNWU2YTBlZTdjNWUyOTkxNjVlYTZiYTFiMWRkYTdkNWIwYmRiZDA4NDRiNWQ1MSJ9';
+        $crypt_str = Crypt::encrypt($str);
+        return $crypt_str;
     }
 }
