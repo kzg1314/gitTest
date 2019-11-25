@@ -29,5 +29,21 @@ Route::group(['prefix'=>'admin','namespace'=>'Admin','middleware'=>'isLogin'],fu
     Route::get('welcome','LoginController@welcome');
     //后台退出路由
     Route::get('logout','LoginController@logout');
+
+    //用户后台模块相关路由
+    Route::get('user/del','UserController@delAll');
+    Route::get('user/auth/{id}','UserController@auth');
+    Route::post('user/doauth','UserController@doAuth');
+    Route::resource('user','UserController');
+
+    //角色模块路由
+    Route::get('role/del','RoleController@delAll');
+    Route::get('role/auth/{id}','RoleController@auth');
+    Route::post('role/doauth','RoleController@doAuth');
+    Route::resource('role','RoleController');
+
+    //权限模块路由
+    Route::get('permission/del','PermissionController@delAll');
+    Route::resource('permission','PermissionController');
 });
 
